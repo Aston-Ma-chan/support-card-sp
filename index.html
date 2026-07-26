@@ -297,6 +297,7 @@ header h1 small{font-weight:600;color:var(--sub);font-size:10px;margin-left:2px}
     <div class="umalist" id="umaList" style="display:none"></div>
   </div>
   <div class="hset">
+    <select class="hsel" id="zoomSel" onchange="setZoom(this.value)"></select>
     <select class="hsel" id="distSel" onchange="setDist(this.value)"></select>
     <select class="hsel" id="styleSel" onchange="setStyle(this.value)"></select>
     <span class="lvlabel">白Lv</span>
@@ -305,12 +306,14 @@ header h1 small{font-weight:600;color:var(--sub);font-size:10px;margin-left:2px}
   </div>
 </header>
 
+<div id="zw">
 <div class="slots" id="slots"></div>
 <div class="board" id="board"></div>
 <div class="umasec" id="umaSec" style="display:none"></div>
 <div class="scn" id="scn" style="display:none"></div>
 <div class="exbar"><span class="tip">スキル名をタップで除外／もう一度タップで戻す</span><button class="exreset" id="exreset" style="display:none" onclick="resetEx()">除外をリセット</button></div>
 <div class="note" id="note"></div>
+</div>
 
 <div class="hud">
   <div>
@@ -378,10 +381,11 @@ var umaByNo = {}; UMA.forEach(function(u){ umaByNo[u.no]=u; });  // {fixed:[{s,l
 var DIST_LIST  = ['短距離','マイル','中距離','長距離'];  // 距離ビット順(N〜Q)
 var STYLE_LIST = ['逃げ','先行','差し','追込'];          // 脚質ビット順(J〜M)
 
-var state = { slots:[null,null,null,null,null,null], gold:{}, lv:5, kir:true, ex:{}, dist:'中距離', style:'逃げ', uma:null };
+var state = { slots:[null,null,null,null,null,null], gold:{}, lv:5, kir:true, ex:{}, dist:'中距離', style:'逃げ', uma:null, zoom:'85' };
 (function(){
   try{ var s = JSON.parse(store.get('spcalc')||'null'); if(s && s.slots){ state = s; if(!state.ex) state.ex = {};
-    if(state.dist===undefined) state.dist='中距離'; if(state.style===undefined) state.style='逃げ'; } }catch(e){}
+    if(state.dist===undefined) state.dist='中距離'; if(state.style===undefined) state.style='逃げ';
+    if(state.zoom===undefined) state.zoom='85'; } }catch(e){}
 })();
 // 発動条件：チェック無し→OK／選択がチェックに含まれる→OK／未選択→無視してOK
 function condOk(si){
@@ -391,6 +395,14 @@ function condOk(si){
   return sOk && dOk;
 }
 function setDist(v){ state.dist=v; persist(); renderAll(); }
+function setZoom(v){ state.zoom=v; persist(); renderAll(); }
+var ZOOMS = [['100','表示:大'],['85','表示:中'],['70','表示:小'],['60','表示:極小']];
+function renderZoom(){
+  var zs=document.getElementById('zoomSel');
+  zs.innerHTML = ZOOMS.map(function(z){return '<option value="'+z[0]+'"'+(state.zoom===z[0]?' selected':'')+'>'+z[1]+'</option>';}).join('');
+  var zw=document.getElementById('zw');
+  zw.style.zoom = (parseInt(state.zoom,10)/100);
+}
 function setStyle(v){ state.style=v; persist(); renderAll(); }
 function renderSel(){
   var ds=document.getElementById('distSel'), ss=document.getElementById('styleSel');
@@ -901,7 +913,7 @@ function renderScn(R){
 }
 
 function renderAll(){
-  renderSel(); renderLv(); renderSlots(); renderUmaIn();
+  renderZoom(); renderSel(); renderLv(); renderSlots(); renderUmaIn();
   var R = computeRows();
   renderBoard(R);
   renderUma(R);
