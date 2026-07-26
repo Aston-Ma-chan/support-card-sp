@@ -370,7 +370,9 @@ function nmParts(name){
   name = String(name);
   var last = name.slice(-1);
   if('○◎×'.indexOf(last)>=0 && name.length>1){
-    return '<span class="hd">'+esc(name.slice(0,-1))+'</span><span class="tl">'+esc(last)+'</span>';
+    // 末尾は記号だけでなく直前2文字も固定表示（コーナー巧者○/コーナー回復○等の見分け用）
+    var keep = name.length>=5 ? 3 : 1;
+    return '<span class="hd">'+esc(name.slice(0,-keep))+'</span><span class="tl">'+esc(name.slice(-keep))+'</span>';
   }
   return '<span class="hd">'+esc(name)+'</span>';
 }
