@@ -125,17 +125,23 @@ header h1 small{font-weight:600;color:var(--sub);font-size:10px;margin-left:2px}
 .gopt.pick{cursor:pointer}
 .gopt.pick.off:active{opacity:.7}
 .grow{display:flex;align-items:baseline;gap:2px}
-.grow .nm{flex:1;min-width:0;font-size:8px;font-weight:800;line-height:1.1;word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.grow .nm{flex:1;min-width:0;font-size:8px;font-weight:800;line-height:1.1;overflow:hidden}
 .grow .sp{font-size:8.5px;font-weight:900;font-variant-numeric:tabular-nums}
 .glv{font-size:6.5px;font-weight:900;opacity:.75}
 .gchoice-tip{font-size:7px;font-weight:800;text-align:center;color:var(--warn);padding:1px 0 2px}
 
+/* 1行スキル名：hd=可変部(はみ出しは…)、tl=末尾記号、glv/バッジは常時表示 */
+.nm{display:flex;align-items:baseline;white-space:nowrap;overflow:hidden;min-width:0}
+.nm .hd{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.nm .tl{flex:none}
+.nm .glv{flex:none;margin-left:1px}
+.nm .prebadge{flex:none;margin-left:1px}
 /* white rows */
 .wrow{
   display:flex;align-items:baseline;gap:2px;padding:1.5px 2px;border-bottom:1px solid #f0f3f1;cursor:pointer;
 }
 .wrow:last-child{border-bottom:none}
-.wrow .nm{flex:1;min-width:0;font-size:8px;line-height:1.1;word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:600}
+.wrow .nm{flex:1;min-width:0;font-size:8px;line-height:1.1;overflow:hidden;font-weight:600}
 .wrow .sp{font-size:8.5px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink)}
 .wrow.dup{opacity:.38}
 .wrow.dup .sp{text-decoration:line-through}
@@ -161,7 +167,7 @@ header h1 small{font-weight:600;color:var(--sub);font-size:10px;margin-left:2px}
 .scol .colbody{border-radius:0 0 6px 6px;border:1px solid var(--line);border-top:none;background:var(--surface);overflow:hidden}
 .srow{display:flex;align-items:baseline;gap:2px;padding:1.5px 2px;border-bottom:1px solid #f0f3f1;cursor:pointer}
 .srow:last-child{border-bottom:none}
-.srow .nm{flex:1;min-width:0;font-size:8px;line-height:1.1;word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:600}
+.srow .nm{flex:1;min-width:0;font-size:8px;line-height:1.1;overflow:hidden;font-weight:600}
 .srow .sp{font-size:8.5px;font-weight:800;font-variant-numeric:tabular-nums}
 .srow .glv{font-size:6.5px;font-weight:900;color:var(--sub)}
 .srow.off{opacity:.35;background:#f2f4f3}
@@ -172,7 +178,7 @@ header h1 small{font-weight:600;color:var(--sub);font-size:10px;margin-left:2px}
 .srad:last-child{border-bottom:none}
 .srad .ch{font-size:7px;font-weight:800;color:var(--sub);line-height:1.1}
 .srad .skl{display:flex;align-items:baseline;gap:2px}
-.srad .nm{flex:1;min-width:0;font-size:8px;font-weight:700;line-height:1.1;word-break:break-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.srad .nm{flex:1;min-width:0;font-size:8px;font-weight:700;line-height:1.1;overflow:hidden}
 .srad .sp{font-size:8.5px;font-weight:800;font-variant-numeric:tabular-nums}
 .srad .glv{font-size:6.5px;font-weight:900;color:var(--sub)}
 .srad.sel{border-left-color:var(--acc);background:#f2f8f4}
@@ -360,6 +366,14 @@ var TYPES = ['スピード','スタミナ','パワー','根性','賢さ','友人
 var MULT  = {0:1.0, 1:0.9, 2:0.8, 3:0.7, 4:0.65, 5:0.6};   // 非切れ者
 var MULTK = {0:0.9, 1:0.8, 2:0.7, 3:0.6, 4:0.55, 5:0.5};   // 切れ者
 
+function nmParts(name){
+  name = String(name);
+  var last = name.slice(-1);
+  if('○◎×'.indexOf(last)>=0 && name.length>1){
+    return '<span class="hd">'+esc(name.slice(0,-1))+'</span><span class="tl">'+esc(last)+'</span>';
+  }
+  return '<span class="hd">'+esc(name)+'</span>';
+}
 function esc(s){return String(s).replace(/[&<>"]/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});}
 function charName(full){var i=String(full).lastIndexOf(']');return i>=0?full.slice(i+1):full;}
 function toHira(s){return String(s).replace(/[\u30a1-\u30f6]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0x60);});}
@@ -766,7 +780,7 @@ function renderBoard(R){
         opt.items.forEach(function(it){
           var spTxt = it.sp<0 ? '<span class="sp unknown">？</span>' : '<span class="sp'+(it.dup&&opt.on?'" style="text-decoration:line-through':'')+'">'+it.sp+'</span>';
           var exClick = (opt.on && !it.co) ? ' onclick="toggleEx('+it.si+');event.stopPropagation()"' : '';
-          h += '<div class="grow'+(it.ex?' ex':'')+(it.co?' co':'')+'"'+exClick+'><span class="nm">'+esc(it.name)+' <span class="glv">Lv'+it.lv+'</span></span>'+spTxt+'</div>';
+          h += '<div class="grow'+(it.ex?' ex':'')+(it.co?' co':'')+'"'+exClick+'><span class="nm">'+nmParts(it.name)+'<span class="glv">Lv'+it.lv+'</span></span>'+spTxt+'</div>';
         });
         h += '</div>';
       });
@@ -774,7 +788,7 @@ function renderBoard(R){
       if(col.preqs.length){
         col.preqs.forEach(function(q){
           var spTxt = q.sp<0 ? '<span class="sp unknown">？</span>' : '<span class="sp">'+q.sp+'</span>';
-          h += '<div class="wrow preq'+(q.dup?' dup':'')+(q.ex?' ex':'')+'" onclick="toggleEx('+q.si+')"><span class="nm">'+esc(q.name)+' <span class="glv">Lv0</span></span>'+spTxt+'</div>';
+          h += '<div class="wrow preq'+(q.dup?' dup':'')+(q.ex?' ex':'')+'" onclick="toggleEx('+q.si+')"><span class="nm">'+nmParts(q.name)+'<span class="glv">Lv0</span></span>'+spTxt+'</div>';
         });
       }
     }
@@ -782,7 +796,7 @@ function renderBoard(R){
       col.whites.forEach(function(w){
         var spTxt = w.sp<0 ? '<span class="sp unknown">？</span>' : '<span class="sp">'+w.sp+'</span>';
         var wClick = w.co ? '' : ' onclick="toggleEx('+w.si+')"';
-        h += '<div class="wrow'+(w.dup?' dup':'')+(w.ex?' ex':'')+(w.up?' up':'')+(w.co?' co':'')+'"'+wClick+'><span class="nm">'+esc(w.name)+'</span>'+spTxt+'</div>';
+        h += '<div class="wrow'+(w.dup?' dup':'')+(w.ex?' ex':'')+(w.up?' up':'')+(w.co?' co':'')+'"'+wClick+'><span class="nm">'+nmParts(w.name)+'</span>'+spTxt+'</div>';
       });
     } else if(!col.golds.length){
       h += '<div class="wrow"><span class="nm" style="color:var(--sub)">ヒントなし</span></div>';
@@ -830,7 +844,7 @@ function umaRowHtml(w, cls){
   var lvTag = (w.lv!=null && !w.co) ? ' <span class="glv">Lv'+w.lv+'</span>' : '';
   var click = w.co ? '' : ' onclick="toggleEx('+w.si+')"';
   return '<div class="srow '+cls+(w.up?' up':'')+(w.dup?' dup':'')+(w.ex?' off':'')+(w.co?' co':'')+'"'+click+
-    '><span class="nm">'+esc(w.name)+(w.pre?' <span class="prebadge">進化前</span>':'')+lvTag+'</span>'+spTxt+'</div>';
+    '><span class="nm">'+nmParts(w.name)+(w.pre?'<span class="prebadge">進化前</span>':'')+lvTag+'</span>'+spTxt+'</div>';
 }
 function renderUma(R){
   var el=document.getElementById('umaSec');
@@ -856,7 +870,7 @@ function renderUma(R){
         if(ri===0){
           var spTxt = w.sp<0 ? '<span class="sp unknown">？</span>' : '<span class="sp'+(w.dup?'" style="text-decoration:line-through':'')+'">'+w.sp+'</span>';
           var click = w.co ? '' : ' onclick="toggleEx('+w.si+');event.stopPropagation()"';
-          h += '<div class="evohead'+(w.co?' co':'')+(w.ex?' off2':'')+'"><div class="grow"'+click+'><span class="nm">'+esc(w.name)+(w.pre?' <span class="prebadge">進化前</span>':'')+'</span>'+spTxt+'</div></div>';
+          h += '<div class="evohead'+(w.co?' co':'')+(w.ex?' off2':'')+'"><div class="grow"'+click+'><span class="nm">'+nmParts(w.name)+(w.pre?'<span class="prebadge">進化前</span>':'')+'</span>'+spTxt+'</div></div>';
         } else {
           h += umaRowHtml(w, '');
         }
@@ -870,7 +884,7 @@ function scnPreqHtml(row){
   if(!row.preqs || !row.preqs.length) return '';
   return row.preqs.map(function(q){
     var spTxt = q.sp<0 ? '<span class="sp unknown">？</span>' : '<span class="sp">'+q.sp+'</span>';
-    return '<div class="srow preq'+(q.dup?' dup':'')+(q.ex?' off':'')+'" onclick="toggleEx('+q.si+')"><span class="nm">'+esc(q.name)+' <span class="glv">Lv0</span></span>'+spTxt+'</div>';
+    return '<div class="srow preq'+(q.dup?' dup':'')+(q.ex?' off':'')+'" onclick="toggleEx('+q.si+')"><span class="nm">'+nmParts(q.name)+'<span class="glv">Lv0</span></span>'+spTxt+'</div>';
   }).join('');
 }
 function renderScn(R){
@@ -882,10 +896,10 @@ function renderScn(R){
   h += '<div class="scol"><div class="scnhead">シナリオ確定</div><div class="colbody">';
   S.fixed.forEach(function(f, i){
     if(!f.on){
-      h += '<div class="srow off'+(f.co?' co':'')+'" onclick="toggleFx('+i+')"><span class="nm">'+esc(f.name)+' <span class="glv">Lv'+f.lv+'</span></span><span class="sp">'+(f.sp<0?'？':f.sp)+'</span></div>';
+      h += '<div class="srow off'+(f.co?' co':'')+'" onclick="toggleFx('+i+')"><span class="nm">'+nmParts(f.name)+'<span class="glv">Lv'+f.lv+'</span></span><span class="sp">'+(f.sp<0?'？':f.sp)+'</span></div>';
     } else {
       var spTxt = f.sp<0 ? '<span class="sp unknown">？</span>' : '<span class="sp">'+f.sp+'</span>';
-      h += '<div class="srow'+(f.dup?' dup':'')+(f.ex?' off':'')+(f.co?' co':'')+'" onclick="toggleFx('+i+')"><span class="nm">'+esc(f.name)+' <span class="glv">Lv'+f.lv+'</span></span>'+spTxt+'</div>';
+      h += '<div class="srow'+(f.dup?' dup':'')+(f.ex?' off':'')+(f.co?' co':'')+'" onclick="toggleFx('+i+')"><span class="nm">'+nmParts(f.name)+'<span class="glv">Lv'+f.lv+'</span></span>'+spTxt+'</div>';
       h += scnPreqHtml(f);
     }
   });
@@ -896,7 +910,7 @@ function renderScn(R){
     var spTxt = o.sp<0 ? '<span class="sp unknown">？</span>' : '<span class="sp'+(o.sel&&o.dup?'" style="text-decoration:line-through':'')+'">'+o.sp+'</span>';
     h += '<div class="srad'+(o.sel?' sel':'')+'" onclick="pickSix('+i+')">'+
       '<div class="ch">'+esc(o.chara)+(o.inDeck?' <span class="indeck">'+(o.inUma?'育成中':'編成中')+'</span>':'')+'</div>'+
-      '<div class="skl'+(o.co?' co':'')+'"><span class="nm">'+esc(o.name)+' <span class="glv">Lv'+o.lv+'</span></span>'+spTxt+'</div></div>';
+      '<div class="skl'+(o.co?' co':'')+'"><span class="nm">'+nmParts(o.name)+'<span class="glv">Lv'+o.lv+'</span></span>'+spTxt+'</div></div>';
     if(o.sel) h += scnPreqHtml(o);
   });
   h += '</div></div>';
@@ -905,7 +919,7 @@ function renderScn(R){
   S.three.forEach(function(o, i){
     var spTxt = o.sp<0 ? '<span class="sp unknown">？</span>' : '<span class="sp'+(o.sel&&o.dup?'" style="text-decoration:line-through':'')+'">'+o.sp+'</span>';
     h += '<div class="srad'+(o.sel?' sel':'')+'" onclick="pickThree('+i+')">'+
-      '<div class="skl'+(o.co?' co':'')+'"><span class="nm">'+esc(o.name)+' <span class="glv">Lv'+o.lv+'</span></span>'+spTxt+'</div></div>';
+      '<div class="skl'+(o.co?' co':'')+'"><span class="nm">'+nmParts(o.name)+'<span class="glv">Lv'+o.lv+'</span></span>'+spTxt+'</div></div>';
     if(o.sel) h += scnPreqHtml(o);
   });
   h += '</div></div>';
