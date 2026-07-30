@@ -220,6 +220,19 @@ header h1 small{font-weight:600;color:var(--sub);font-size:10px;margin-left:2px}
 }
 .hud .actions button:active{background:rgba(255,255,255,.32)}
 
+.mascot{
+  position:fixed;right:10px;z-index:29;
+  bottom:calc(var(--hud-h) + env(safe-area-inset-bottom) - 34px);
+  height:88px;width:auto;cursor:pointer;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.18));
+  transition:transform .15s;
+}
+.mascot:active{transform:translateY(4px)}
+@keyframes mascotHop{
+  0%{transform:translateY(0)} 30%{transform:translateY(-14px)}
+  55%{transform:translateY(0)} 72%{transform:translateY(-6px)} 100%{transform:translateY(0)}
+}
+.mascot.hop{animation:mascotHop .5s ease}
 .note{padding:6px 10px 4px;font-size:8.5px;color:var(--sub);line-height:1.6}
 .note b{color:var(--warn)}
 
@@ -315,6 +328,7 @@ header h1 small{font-weight:600;color:var(--sub);font-size:10px;margin-left:2px}
 <div class="note" id="note"></div>
 </div>
 
+<img class="mascot" id="mascot" src="img/mascot.webp" alt="" onclick="mascotHop()" onerror="this.style.display='none'">
 <div class="hud">
   <div>
     <div class="tl">合計SP</div>
@@ -399,6 +413,10 @@ function condOk(si){
 }
 function setDist(v){ state.dist=v; persist(); renderAll(); }
 function setZoom(v){ state.zoom=v; persist(); renderAll(); }
+function mascotHop(){
+  var m=document.getElementById('mascot');
+  m.classList.remove('hop'); void m.offsetWidth; m.classList.add('hop');
+}
 var ZOOMS = [['100','表示:大'],['85','表示:中'],['70','表示:小'],['60','表示:極小']];
 function renderZoom(){
   var zs=document.getElementById('zoomSel');
